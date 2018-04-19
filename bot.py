@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import configparser
 import nltk
 from nltk.tokenize import RegexpTokenizer

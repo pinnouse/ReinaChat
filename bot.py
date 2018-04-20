@@ -133,11 +133,11 @@ model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 model.compile(optimizer='rmsprop', loss='categorical_crossentropy')
 
 data = (max_seq_len, epochs, batch_size, latent_dim, vocab_size)
-if os.path.isfile("bot-%d (%d-%d-%d-%d).h5" % data):
-    model.load_weights("bot-%d (%d-%d-%d-%d).h5" % data)
+if os.path.isfile(os.path.join(os.path.dirname(__file__), "bot-%d (%d-%d-%d-%d).h5" % data)):
+    model.load_weights(os.path.join(os.path.dirname(__file__), "bot-%d (%d-%d-%d-%d).h5" % data))
 else:
     model.fit([encoder_input_data, decoder_input_data], decoder_target_data, batch_size=batch_size, epochs=epochs, validation_split=0.2)
-    model.save("bot-%d (%d-%d-%d-%d).h5" % data)
+    model.save(os.path.join(os.path.dirname(__file__), "bot-%d (%d-%d-%d-%d).h5" % data))
 
 encoder_model = Model(encoder_inputs, encoder_states)
 

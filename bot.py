@@ -5,7 +5,8 @@ import nltk
 from nltk.tokenize import RegexpTokenizer
 
 config = configparser.ConfigParser()
-config.read('bot-config.ini')
+conf_file = os.path.join(os.path.dirname(__file__), 'bot-config.ini')
+config.read(conf_file)
 
 batch_size = int(config['DEFAULT']['batch_size'])
 epochs = int(config['DEFAULT']['epochs'])

@@ -204,10 +204,10 @@ for seq_index in range(100):
     print('Input sentence:', input_texts[seq_index])
     print('Decoded sentence:', decoded_sentence)
 
-while True:
-    try:
-        input_seq = sentence_to_seq(input('You >> '))
-        decoded_sentence = decode_sequence(input_seq)
-        print('Bot >>', decoded_sentence)
-    except (KeyboardInterrupt, SystemExit):
-        raise
+#while True:
+#    try:
+#        input_seq = sentence_to_seq(input('You >> '))
+#        decoded_sentence = decode_sequence(input_seq)
+#        print('Bot >>', decoded_sentence)
+#    except (KeyboardInterrupt, SystemExit):
+#        raise

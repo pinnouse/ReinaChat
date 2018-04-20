@@ -1,5 +1,5 @@
 from __future__ import print_function
-
+from io import open
 import os
 import configparser
 import nltk
@@ -25,13 +25,13 @@ input_texts = []
 target_texts = []
 input_words = set(["UNK"])
 target_words = set(["GO", "UNK", "EOS"])
-with open(data_path + 'custom.enc', 'r', encoding='utf-8', errors='ignore') as f:
+with open(os.path.join(os.path.dirname(__file__), data_path + 'custom.enc'), 'r', encoding='utf-8', errors='ignore') as f:
     line_enc = f.read().split('\n')
-with open(data_path + 'custom.dec', 'r', encoding='utf-8', errors='ignore') as f:
+with open(os.path.join(os.path.dirname(__file__), data_path + 'custom.dec'), 'r', encoding='utf-8', errors='ignore') as f:
     line_dec = f.read().split('\n')
-with open(data_path + 'train.enc', 'r', encoding='utf-8', errors='ignore') as f:
+with open(os.path.join(os.path.dirname(__file__), data_path + 'train.enc'), 'r', encoding='utf-8', errors='ignore') as f:
     line_enc += f.read().split('\n')
-with open(data_path + 'train.dec', 'r', encoding='utf-8', errors='ignore') as f:
+with open(os.path.join(os.path.dirname(__file__), data_path + 'train.dec'), 'r', encoding='utf-8', errors='ignore') as f:
     line_dec += f.read().split('\n')
 
 small_samp_size = min([num_samples, len(line_enc)-1, len(line_dec)-1])

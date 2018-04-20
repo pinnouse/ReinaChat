@@ -4,6 +4,7 @@ import os
 import configparser
 import nltk
 from nltk.tokenize import RegexpTokenizer
+nltk.download('punkt')
 
 config = configparser.ConfigParser()
 conf_file = os.path.join(os.path.dirname(__file__), 'bot-config.ini')

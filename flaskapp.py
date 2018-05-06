@@ -4,14 +4,18 @@ app = Flask(__name__)
 
 @app.route("/api")
 def api():
-    sentence = bot.sentence_to_seq(str(request.args.get('s')))
-    out = bot.decode_sequence(sentence)
-    return out
+    seq, read = bot.sentence_to_seq(str(request.args.get('s')))
+    out = bot.decode_sequence(seq)
+    d = {
+        'read_sentence': read,
+        'out_sentence': out
+    }
+    return json.dumps(d)
 
 @app.route("/web")
 def web():
     print(request.args.get('s'))
-    sentence = bot.sentence_to_seq(str(request.args.get('s')))
+    sentence, _ = bot.sentence_to_seq(str(request.args.get('s')))
     out = ""
     if sentence is not None:
         out = bot.decode_sequence(sentence)

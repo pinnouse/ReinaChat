@@ -32,7 +32,6 @@ vocab_size = int(config['DEFAULT']['vocab_size'])
 
 max_seq_len = int(config['DEFAULT']['max_seq_len'])
 class Bot:
-
     input_texts = []
     target_texts = []
     input_words = dict([("<UNK>", 0)])
@@ -208,7 +207,7 @@ class Bot:
                 if sorted_scores[i] * 0.90 > sorted_scores[i]: #if the next score is not within 90% of the initial one, cut the scoring
                     sorted_weights = sorted_weights[:i]
                     break
-        print(list(sorted_weights))
+        # print(list(sorted_weights))
         for i in list(sorted_weights):
             if random.random() < 0.8:
                 return i

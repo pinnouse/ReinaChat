@@ -157,9 +157,9 @@ decoder_outputs = decoder_dense(decoder_outputs)
 model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 model.compile(optimizer='adam', loss='categorical_crossentropy')
 
-data = (max_seq_len, epochs, batch_size, latent_dim, vocab_size)
+data = (max_seq_len, num_samples, epochs, batch_size, latent_dim, vocab_size)
 
-model_location = "model/bot-%d (%d-%d-%d-%d).h5" % data
+model_location = "model/bot-%d %dsamples (%d-%d-%d-%d).h5" % data
 if os.path.isfile(model_location):
     model.load_weights(model_location)
 else:
@@ -199,7 +199,12 @@ def sample(a, randomness=1):
     sorted_weights = []
     for i in max_score_indeces:
         sorted_weights.append((i, a[i]))
-    sorted_weights, _ = zip(*sorted(sorted_weights, key=lambda x:float(x[1]), reverse=True))
+    sorted_weights, sorted_scores = zip(*sorted(sorted_weights, key=lambda x:float(x[1]), reverse=True))
+    for i in range(len(sorted_scores) - 1):
+        if i > 0:
+            if sorted_scores[i] * 0.90 > sorted_scores[i]: #if the next score is not within 90% of the initial one, cut the scoring
+                sorted_weights = sorted_weights[:i]
+                break
     print(list(sorted_weights))
     for i in list(sorted_weights):
         if random.random() < 0.8:

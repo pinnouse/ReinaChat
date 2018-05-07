@@ -14,23 +14,24 @@ from keras.models import Model
 from keras.models import load_model
 from keras.layers import Input, LSTM, Dense
 
+### CONSTANTS
+tokenizer = RegexpTokenizer(r'\w+|\<[A-Z]+\>|\$[a-z]+|&[a-z]+;|[a-z]?\'[a-z]+|[.?!]') # Special commands are: $command
+blacklist_pattern = r'http://[a-z]*'
+
+config = configparser.ConfigParser()
+conf_file = os.path.join(os.path.dirname(__file__), 'bot-config.ini')
+config.read(conf_file)
+
+batch_size = int(config['DEFAULT']['batch_size'])
+epochs = int(config['DEFAULT']['epochs'])
+latent_dim = int(config['DEFAULT']['latent_dim'])
+num_samples = int(config['DEFAULT']['num_samples'])
+
+data_path = config['DEFAULT']['data_path']
+vocab_size = int(config['DEFAULT']['vocab_size'])
+
+max_seq_len = int(config['DEFAULT']['max_seq_len'])
 class Bot:
-    tokenizer = RegexpTokenizer(r'\w+|\<[A-Z]+\>|\$[a-z]+|&[a-z]+;|[a-z]?\'[a-z]+|[.?!]') # Special commands are: $command
-    blacklist_pattern = r'http://[a-z]*'
-
-    config = configparser.ConfigParser()
-    conf_file = os.path.join(os.path.dirname(__file__), 'bot-config.ini')
-    config.read(conf_file)
-
-    batch_size = int(config['DEFAULT']['batch_size'])
-    epochs = int(config['DEFAULT']['epochs'])
-    latent_dim = int(config['DEFAULT']['latent_dim'])
-    num_samples = int(config['DEFAULT']['num_samples'])
-
-    data_path = config['DEFAULT']['data_path']
-    vocab_size = int(config['DEFAULT']['vocab_size'])
-
-    max_seq_len = int(config['DEFAULT']['max_seq_len'])
 
     input_texts = []
     target_texts = []
@@ -240,7 +241,7 @@ class Bot:
         return decoded_sentence
 
     def sentence_to_seq(self, sentence):
-        sentence = self.tokenizer.tokenize(sentence)
+        sentence = tokenizer.tokenize(sentence)
         seq = np.zeros((1, self.max_encoder_seq_length, self.num_encoder_tokens), dtype='float32')
         
         read_sentence = ""

@@ -251,7 +251,7 @@ class Bot:
             seq[0, i, self.input_token_index[w]] = 1.
             read_sentence += w + " "
             
-        print("Read sentence: ", read_sentence)
+        # print("Read sentence: ", read_sentence)
 
         return (seq, read_sentence)
 
@@ -264,10 +264,11 @@ class Bot:
     #     print('Input sentence:', input_texts[seq_index])
     #     print('Decoded sentence:', decoded_sentence)
 
-    # while True:
-    #    try:
-    #        input_seq, _ = sentence_to_seq(input('You >> '))
-    #        decoded_sentence = decode_sequence(input_seq)
-    #        print('Bot >>', decoded_sentence)
-    #    except (KeyboardInterrupt, SystemExit):
-    #        raise
+# b = Bot()
+# while True:
+#    try:
+#        input_seq, _ = b.sentence_to_seq(input('You >> '))
+#        decoded_sentence = b.decode_sequence(input_seq)
+#        print('Bot >>', decoded_sentence)
+#    except (KeyboardInterrupt, SystemExit):
+#        raise

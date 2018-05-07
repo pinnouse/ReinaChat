@@ -17,11 +17,11 @@ def api():
 
 @app.route("/web")
 def web():
-    print(request.args.get('s'))
     sentence, _ = chatbot.sentence_to_seq(str(request.args.get('s')))
     out = ""
     if sentence is not None and sentence is not "":
         out = chatbot.decode_sequence(sentence)
+        # print("output:", out)
     return render_template('app.html', output=out)
 
 if __name__ == "__main__":

@@ -106,6 +106,8 @@ target_token_index = dict([w, i] for i, w in enumerate(target_words))
 # Free memory
 input_words = None
 target_words = None
+line_enc = None
+line_dec = None
 
 import numpy as np
 import os.path

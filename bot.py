@@ -90,8 +90,8 @@ for i in range(small_samp_size):
     input_texts.append(input_text)
     target_texts.append(target_text)
 
-input_words = vocab_builder.build_vocab(input_words)
-target_words = vocab_builder.build_vocab(target_words)
+input_words = vocab_builder.build_vocab(input_words, data_path + 'in.vocab')
+target_words = vocab_builder.build_vocab(target_words, data_path + 'tg.vocab')
 num_encoder_tokens = len(input_words)
 num_decoder_tokens = len(target_words)
 

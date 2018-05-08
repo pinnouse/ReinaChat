@@ -1,4 +1,5 @@
 import nltk
+import os.path
 import re
 from collections import OrderedDict
 import operator
@@ -16,7 +17,7 @@ special_words = [
     "xd"
 ]
 
-def build_vocab(dict_words):
+def build_vocab(dict_words, filename=None):
     # words will come in pairs of (word, frequency)
     tagged = nltk.pos_tag(list(dict_words.keys()))
     words_tagged = {}
@@ -37,6 +38,10 @@ def build_vocab(dict_words):
         w = words_tagged[tag].split(" ")
         tagged_word_in_dict = {x: freq for x, freq in dict_words.items() if x in w}
         
-        vocab += (OrderedDict(sorted(tagged_word_in_dict.items(), key=operator.itemgetter(1), reverse=True)).keys())
+        vocab += OrderedDict(sorted(tagged_word_in_dict.items(), key=operator.itemgetter(1), reverse=True)).keys()
     # print(words_tagged)
+    if filename is not None:
+        with open(os.path.join(os.path.dirname(__file__), filename), 'w', encoding='utf-8') as f:
+            for line in vocab:
+                f.write(line + "\n")
     return vocab

@@ -38,5 +38,5 @@ def build_vocab(dict_words):
         tagged_word_in_dict = {x: freq for x, freq in dict_words.items() if x in w}
         
         vocab += (OrderedDict(sorted(tagged_word_in_dict.items(), key=operator.itemgetter(1), reverse=True)).keys())
-    print(words_tagged)
+    # print(words_tagged)
     return vocab

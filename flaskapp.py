@@ -1,6 +1,7 @@
 from io import open
 import os.path
 from configparser import ConfigParser
+from collections import OrderedDict
 import vocab_builder
 here = os.path.dirname(__file__)
 config = ConfigParser()
@@ -13,8 +14,8 @@ data_path = config['DEFAULT']['data_path']
 vocab_size = int(config['DEFAULT']['vocab_size'])
 max_seq_len = int(config['DEFAULT']['max_seq_len'])
 
-input_token_index = dict()
-target_token_index = dict()
+input_token_index = OrderedDict()
+target_token_index = OrdererdDict()
 num_encoder_tokens = 0
 num_decoder_tokens = 0
 with open(os.path.join(here, data_path + 'in.vocab'), 'r', encoding='utf-8', errors='ignore') as f:

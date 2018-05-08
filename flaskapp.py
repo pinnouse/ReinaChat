@@ -25,8 +25,8 @@ with open(os.path.join(here, data_path + 'tg.vocab'), 'r', encoding='utf-8', err
     for i, row in enumerate(f):
         target_token_index[row] = i
 
-num_encoder_tokens = len(input_token_index) - 1
-num_decoder_tokens = len(target_token_index) - 1
+num_encoder_tokens = len(input_token_index)
+num_decoder_tokens = len(target_token_index)
 
 from keras import Model
 from keras.layers import Input, LSTM, Dense

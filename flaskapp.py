@@ -3,11 +3,7 @@ import bot
 import json
 app = Flask(__name__)
 
-chatbot = None
-
-def main():
-    chatbot = bot.Bot()
-    app.run(host='0.0.0.0', port=80)
+chatbot = bot.Bot()
 
 @app.route("/api")
 def api():
@@ -29,4 +25,4 @@ def web():
     return render_template('app.html', output=out)
 
 if __name__ == "__main__":
-    main()
+    app.run(host='0.0.0.0', port=80)

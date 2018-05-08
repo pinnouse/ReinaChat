@@ -11,7 +11,6 @@ import vocab_builder
 import random
 import numpy as np
 from keras.models import Model
-from keras.models import load_model
 from keras.layers import Input, LSTM, Dense
 
 ### CONSTANTS
@@ -164,7 +163,6 @@ data = (max_seq_len, num_samples, epochs, batch_size, latent_dim, vocab_size)
 
 model_location = os.path.join(here, "model/bot-%d %dsamples (%d-%d-%d-%d).h5" % data)
 if os.path.isfile(model_location):
-    model = load_model(model_location)
     model.load_weights(model_location)
 else:
     model.fit([encoder_input_data, decoder_input_data], decoder_target_data, batch_size=batch_size, epochs=epochs, validation_split=0.2)

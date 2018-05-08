@@ -18,9 +18,12 @@ target_token_index = dict()
 num_encoder_tokens = 0
 num_decoder_tokens = 0
 with open(os.path.join(here, data_path + 'in.vocab'), 'r', encoding='utf-8', errors='ignore') as f:
-    input_token_index = dict([w, i] for i, w in enumerate(f.read().split('\n')))
+    for i, row in enumerate(f):
+        input_token_index[row] = i
+        
 with open(os.path.join(here, data_path + 'tg.vocab'), 'r', encoding='utf-8', errors='ignore') as f:
-    target_token_index = dict([w, i] for i, w in enumerate(f.read().split('\n')))
+    for i, row in enumerate(f):
+        target_token_index[row] = i
 
 num_encoder_tokens = len(input_token_index) - 1
 num_decoder_tokens = len(target_token_index) - 1

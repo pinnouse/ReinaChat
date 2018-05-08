@@ -15,11 +15,13 @@ from keras.models import load_model
 from keras.layers import Input, LSTM, Dense
 
 ### CONSTANTS
+here = os.path.dirname(__file__)
+
 tokenizer = RegexpTokenizer(r'\w+|\<[A-Z]+\>|\$[a-z]+|&[a-z]+;|[a-z]?\'[a-z]+|[.?!]') # Special commands are: $command
 blacklist_pattern = r'http://[a-z]*'
 
 config = configparser.ConfigParser()
-conf_file = os.path.join(os.path.dirname(__file__), 'bot-config.ini')
+conf_file = os.path.join(here, 'bot-config.ini')
 config.read(conf_file)
 
 batch_size = int(config['DEFAULT']['batch_size'])
@@ -36,17 +38,17 @@ class Bot:
     target_texts = []
     input_words = dict([("<UNK>", 0)])
     target_words = dict([("<GO>", 0), ("<UNK>", 0), ("<EOS>", 0)])
-    with open(os.path.join(os.path.dirname(__file__), data_path + 'custom.enc'), 'r', encoding='utf-8', errors='ignore') as f:
+    with open(os.path.join(here, data_path + 'custom.enc'), 'r', encoding='utf-8', errors='ignore') as f:
         line_enc = f.read().split('\n')
-    with open(os.path.join(os.path.dirname(__file__), data_path + 'custom.dec'), 'r', encoding='utf-8', errors='ignore') as f:
+    with open(os.path.join(here, data_path + 'custom.dec'), 'r', encoding='utf-8', errors='ignore') as f:
         line_dec = f.read().split('\n')
-    with open(os.path.join(os.path.dirname(__file__), data_path + 'train.from'), 'r', encoding='utf-8', errors='ignore') as f:
+    with open(os.path.join(here, data_path + 'train.from'), 'r', encoding='utf-8', errors='ignore') as f:
         for row in f:
             row.replace(blacklist_pattern, '')
             line_enc.append(row)
             if len(line_enc) >= num_samples:
                 break
-    with open(os.path.join(os.path.dirname(__file__), data_path + 'train.to'), 'r', encoding='utf-8', errors='ignore') as f:
+    with open(os.path.join(here, data_path + 'train.to'), 'r', encoding='utf-8', errors='ignore') as f:
         for row in f:
             row.replace(blacklist_pattern, '')
             line_dec.append(row)
@@ -161,7 +163,7 @@ class Bot:
 
     data = (max_seq_len, num_samples, epochs, batch_size, latent_dim, vocab_size)
 
-    model_location = "var/www/html/flaskapp/model/bot-%d %dsamples (%d-%d-%d-%d).h5" % data
+    model_location = os.path.join(here, "model/bot-%d %dsamples (%d-%d-%d-%d).h5" % data)
     if os.path.isfile(model_location):
         model.load_weights(model_location)
     else:

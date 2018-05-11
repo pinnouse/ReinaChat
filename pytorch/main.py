@@ -235,7 +235,7 @@ def train(i_tensor, t_tensor, encoder, decoder, encoder_optimizer, decoder_optim
         decoder_input, decoder_hidden, encoder_outputs
       )
       loss += criterion(decoder_output, t_tensor[di])
-      decoder_inpuut = t_tensor[di] #Teacher forcing
+      decoder_input = t_tensor[di] #Teacher forcing
 
   else:
     for di in range(target_length):
@@ -276,22 +276,46 @@ def timeSince(since, percent):
     rs = es - s
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
 
-def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=1e-2):
+def saveCheckpoint(state, is_best, filename='output/checkpoint.pth.tar'):
+  """Save checkpoint if new best is achieved"""
+  if is_best:
+    print("=> Saving new best")
+    torch.save(state, os.path.join(here, filename)) # Save checkpoint state
+  else:
+    print("=> Validation accuracy did not improve")
+
+def trainIters(encoder, decoder, n_iters, start_iter=1, print_every=1000, ckpt_every=5000, learning_rate=1e-2):
   start = time.time()
   print_loss_total = 0 # Reset every print_every
+
+  best_loss = None
 
   encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
   decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
   training_pairs = [tensorsFromPair(random.choice(pairs)) for i in range(n_iters)]
   criterion = nn.NLLLoss()
 
-  for iter in range(1, n_iters):
+  for iter in range(start_iter, n_iters):
     training_pair = training_pairs[iter - 1]
     i_tensor = training_pair[0]
     t_tensor = training_pair[1]
 
     loss = train(i_tensor, t_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
     print_loss_total += loss
+
+    is_best = bool(loss < best_loss)
+
+    if best_loss == None or loss < best_loss:
+      best_loss = loss
+      best_states = {
+        'iter': start_iter + iter + 1,
+        'enc_state_dict': encoder.state_dict(),
+        'dec_state_dict': decoder.state_dict(),
+        'best_loss': best_loss
+      }
+
+    if iter % ckpt_every == 0:
+      saveCheckpoint(best_states, is_best)
 
     if iter % print_every == 0:
       print_loss_avg = print_loss_total / print_every
@@ -300,14 +324,14 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=1e-2):
 
 def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
   with torch.no_grad():
-    i_tensor = tensorFromSentence(sentence)
+    i_tensor = tensorFromSentence(i_data, sentence)
     input_length = i_tensor.size()[0]
     encoder_hidden = encoder.initHidden()
 
     encoder_outputs = torch.zeros(max_length, encoder.h_size, devie=device)
 
     for ei in range(input_length):
-      encoder_ouput, encoder_hidden = encoder(
+      encoder_output, encoder_hidden = encoder(
         i_tensor[ei], encoder_hidden
       )
       encoder_outputs[ei] += encoder_output[0, 0]
@@ -318,7 +342,7 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
 
     decoded_words = []
 
-    decoder_attention = torch.zeros(max_length, max_length)
+    decoder_attentions = torch.zeros(max_length, max_length)
 
     for di in range(max_length):
       decoder_output, decoder_hidden, decoder_attention = decoder(

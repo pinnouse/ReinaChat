@@ -113,7 +113,7 @@ def prepareData(i_file, t_file, samples=2000, data_path="data/", reverse=False):
     print(t_data.name, t_data.n_words)
     return i_data, t_data, pairs
 
-i_data, t_data, pairs = prepareData("train.to", "train.from", True)
+i_data, t_data, pairs = prepareData("train.to", "train.from", reverse=True)
 
 class EncoderRNN(nn.Module):
   def __init__(self, i_size, h_size):

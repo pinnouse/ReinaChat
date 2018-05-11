@@ -278,7 +278,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=1e-2):
     print_loss_total += loss
 
     if iter % print_every == 0:
-      print_loss_avg = print_loss_total / print_every:
+      print_loss_avg = print_loss_total / print_every
       print_loss_total = 0
       print('%s (%d %d%%) %.4f' % (timeSince(start, iter / n_iters), iter, iter / n_iters * 100, print_loss_avg))
 

@@ -41,6 +41,22 @@ class Data:
     else:
       self.word2count[word] += 1
 
+# Turn a Unicode string to plain ASCII
+def unicodeToAscii(s):
+    return ''.join(
+        c for c in unicodedata.normalize('NFD', s)
+        if unicodedata.category(c) != 'Mn'
+    )
+
+# Lowercase, trim, and remove non-letter characters
+
+
+def normalizeString(s):
+    s = unicodeToAscii(s.lower().strip())
+    s = re.sub(r"([.!?])", r" \1", s)
+    s = re.sub(r"[^a-zA-Z.!?]+", r" ", s)
+    return s      
+
 def readData(i_file, t_file, samples=2000, data_path="data/", reverse=False):
   print("Reading lines ------")
 
@@ -62,7 +78,7 @@ def readData(i_file, t_file, samples=2000, data_path="data/", reverse=False):
 
   samp_size = min([len(lines_in), len(lines_target), samples])
 
-  pairs = [[lines_in[i], lines_target[i]] for i in range(samp_size)]
+  pairs = [[normalizeString(lines_in[i]), normalizeString(lines_target[i])] for i in range(samp_size)]
 
   if reverse:
     pairs = [list(reversed(p)) for p in pairs]

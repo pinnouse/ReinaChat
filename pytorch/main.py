@@ -49,14 +49,14 @@ def readData(i_file, t_file, samples=2000, data_path="data/", reverse=False):
   with open(os.path.join(here, data_path + i_file), encoding='utf-8', errors='ignore') as f:
     for n_row, row in enumerate(f):
       if n_row < samples:
-        lines_in[n_row] = row
+        lines_in.append(row)
       else:
         break
   
   with open(os.path.join(here, data_path + t_file), encoding='utf-8', errors='ignore') as f:
     for n_row, row in enumerate(f):
       if n_row < samples:
-        lines_target[n_row] = row
+        lines_target.append(row)
       else:
         break
 
@@ -214,11 +214,11 @@ def train(i_tensor, t_tensor, encoder, decoder, encoder_optimizer, decoder_optim
 
   if use_teacher_forcing:
     # Teacher forcing; feed target as new input
-    for di in range(t_length):
+    for di in range(target_length):
       decoder_output, decoder_hidden, decoder_attention = decoder(
         decoder_input, decoder_hidden, encoder_outputs
       )
-      loss += criterion(decoder_output, target_tensor[di])
+      loss += criterion(decoder_output, t_tensor[di])
       decoder_inpuut = t_tensor[di] #Teacher forcing
 
   else:
@@ -274,7 +274,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=1e-2):
     i_tensor = training_pair[0]
     t_tensor = training_pair[1]
 
-    loss = train(i_tensor, t_tensor, encoder, decoder, encoder_optimizer, decoddere_optimizer, criterion)
+    loss = train(i_tensor, t_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
     print_loss_total += loss
 
     if iter % print_every == 0:
@@ -285,14 +285,14 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=1e-2):
 def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
   with torch.no_grad():
     i_tensor = tensorFromSentence(sentence)
-    input_length = input_tensor.size()[0]
+    input_length = i_tensor.size()[0]
     encoder_hidden = encoder.initHidden()
 
     encoder_outputs = torch.zeros(max_length, encoder.h_size, devie=device)
 
     for ei in range(input_length):
       encoder_ouput, encoder_hidden = encoder(
-        encoder_input, encoder_hidden
+        i_tensor[ei], encoder_hidden
       )
       encoder_outputs[ei] += encoder_output[0, 0]
 

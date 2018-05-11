@@ -303,7 +303,7 @@ def trainIters(encoder, decoder, n_iters, start_iter=1, print_every=1000, ckpt_e
     loss = train(i_tensor, t_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
     print_loss_total += loss
 
-    is_best = bool(loss < best_loss)
+    is_best = bool(loss < best_loss) if best_loss != None else False
 
     if best_loss == None or loss < best_loss:
       best_loss = loss

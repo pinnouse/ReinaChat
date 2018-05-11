@@ -330,7 +330,7 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
     input_length = i_tensor.size()[0]
     encoder_hidden = encoder.initHidden()
 
-    encoder_outputs = torch.zeros(max_length, encoder.h_size, devie=device)
+    encoder_outputs = torch.zeros(max_length, encoder.h_size, device=device)
 
     for ei in range(input_length):
       encoder_output, encoder_hidden = encoder(

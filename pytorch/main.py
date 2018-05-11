@@ -289,6 +289,7 @@ def trainIters(encoder, decoder, n_iters, start_iter=1, print_every=1000, ckpt_e
   print_loss_total = 0 # Reset every print_every
 
   best_loss = None
+  prev_best = None
 
   encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
   decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
@@ -303,7 +304,6 @@ def trainIters(encoder, decoder, n_iters, start_iter=1, print_every=1000, ckpt_e
     loss = train(i_tensor, t_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
     print_loss_total += loss
 
-    is_best = bool(loss < best_loss) if best_loss != None else False
 
     if best_loss == None or loss < best_loss:
       best_loss = loss
@@ -315,7 +315,9 @@ def trainIters(encoder, decoder, n_iters, start_iter=1, print_every=1000, ckpt_e
       }
 
     if iter % ckpt_every == 0:
+      is_best = bool(best_loss < prev_best) if prev_best != None else True
       saveCheckpoint(best_states, is_best)
+      prev_best = best_loss
 
     if iter % print_every == 0:
       print_loss_avg = print_loss_total / print_every

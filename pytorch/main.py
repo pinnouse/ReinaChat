@@ -55,11 +55,13 @@ def normalizeString(s):
     s = re.sub(r"[^a-zA-Z.!?]+", r" ", s)
     return s      
 
-def readData(i_file, t_file, samples=2000, data_path="data/", reverse=False):
+def readData(i_file, t_file, samples=2000, data_path="data", reverse=False):
   print("Reading lines...")
 
   lines_in = []
   lines_target = []
+
+  data_path = data_path + os.sep
 
   print("Reading input file")
   with open(os.path.join(here, data_path + i_file), encoding='utf-8', errors='ignore') as f:
@@ -100,19 +102,20 @@ def filterPair(p):
 def filterPairs(pairs):
   return [pair for pair in pairs if filterPair(pair)]
 
-def prepareData(i_file, t_file, samples=2000, data_path="data/", reverse=False):
-    i_data, t_data, pairs = readData(i_file, t_file, samples, data_path, reverse)
-    print("Read %d sentence pairs" % len(pairs))
-    pairs = filterPairs(pairs)
-    print("Trimmed to %d sentence pairs" % len(pairs))
-    print("Counting words...")
-    for pair in pairs:
-      i_data.addSentence(pair[0])
-      t_data.addSentence(pair[1])
-    print("Counted words:")
-    print(i_data.name, i_data.n_words)
-    print(t_data.name, t_data.n_words)
-    return i_data, t_data, pairs
+def prepareData(i_file, t_file, samples=2000, data_path="data", reverse=False):
+  data_path = data_path + os.sep
+  i_data, t_data, pairs = readData(i_file, t_file, samples, data_path, reverse)
+  print("Read %d sentence pairs" % len(pairs))
+  pairs = filterPairs(pairs)
+  print("Trimmed to %d sentence pairs" % len(pairs))
+  print("Counting words...")
+  for pair in pairs:
+    i_data.addSentence(pair[0])
+    t_data.addSentence(pair[1])
+  print("Counted words:")
+  print(i_data.name, i_data.n_words)
+  print(t_data.name, t_data.n_words)
+  return i_data, t_data, pairs
 
 i_data, t_data, pairs = prepareData("train.to", "train.from", reverse=True)
 
@@ -279,9 +282,11 @@ def timeSince(since, percent):
 
 def saveCheckpoint(state, is_best, iteration, output_dir='output', filename='checkpoint'):
   """Save checkpoint if new best is achieved"""
+
+  output_dir = output_dir + os.sep
   if is_best:
     print("=> Saving new best")
-    torch.save(state, os.path.join(here, output_dir + os.sep + filename + '-' + iteration + '.pth.tar')) # Save checkpoint state
+    torch.save(state, os.path.join(here, output_dir + filename + '-' + iteration + '.pth.tar')) # Save checkpoint state
   else:
     print("=> Validation accuracy did not improve")
 

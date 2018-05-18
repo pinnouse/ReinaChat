@@ -49,8 +49,6 @@ def unicodeToAscii(s):
     )
 
 # Lowercase, trim, and remove non-letter characters
-
-
 def normalizeString(s):
     s = unicodeToAscii(s.lower().strip())
     s = re.sub(r"([.!?])", r" \1", s)
@@ -58,10 +56,12 @@ def normalizeString(s):
     return s      
 
 def readData(i_file, t_file, samples=2000, data_path="data/", reverse=False):
-  print("Reading lines ------")
+  print("Reading lines...")
 
   lines_in = []
   lines_target = []
+
+  print("Reading input file")
   with open(os.path.join(here, data_path + i_file), encoding='utf-8', errors='ignore') as f:
     for n_row, row in enumerate(f):
       if n_row < samples:
@@ -69,6 +69,7 @@ def readData(i_file, t_file, samples=2000, data_path="data/", reverse=False):
       else:
         break
   
+  print("Reading target file")
   with open(os.path.join(here, data_path + t_file), encoding='utf-8', errors='ignore') as f:
     for n_row, row in enumerate(f):
       if n_row < samples:
@@ -276,11 +277,11 @@ def timeSince(since, percent):
     rs = es - s
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
 
-def saveCheckpoint(state, is_best, filename='output/checkpoint.pth.tar'):
+def saveCheckpoint(state, is_best, iteration, output_dir='output', filename='checkpoint'):
   """Save checkpoint if new best is achieved"""
   if is_best:
     print("=> Saving new best")
-    torch.save(state, os.path.join(here, filename)) # Save checkpoint state
+    torch.save(state, os.path.join(here, output_dir + os.sep + filename + '-' + iteration + '.pth.tar')) # Save checkpoint state
   else:
     print("=> Validation accuracy did not improve")
 
@@ -316,7 +317,7 @@ def trainIters(encoder, decoder, n_iters, start_iter=1, print_every=1000, ckpt_e
 
     if iter % ckpt_every == 0:
       is_best = bool(best_loss < prev_best) if prev_best != None else True
-      saveCheckpoint(best_states, is_best)
+      saveCheckpoint(best_states, is_best, iter)
       prev_best = best_loss
 
     if iter % print_every == 0:
@@ -378,3 +379,17 @@ attn_decoder1 = AttnDecoderRNN(h_size, t_data.n_words, dropout_p=0.1).to(device)
 
 trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 evaluateRandomly(encoder1, attn_decoder1)
+
+run = True
+while run:
+  try:
+    output_words, attentions = evaluate(
+      encoder1, attn_decoder1,
+      input('>')
+    )
+    output_sentence = ' '.join(output_words)
+    print('<', output_sentence)
+    print('')
+  except (KeyboardInterrupt, SystemExit):
+    print ("Thanks for using this program")
+    run = False

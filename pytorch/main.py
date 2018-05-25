@@ -330,7 +330,10 @@ def trainIters(encoder, decoder, n_iters, start_iter=1, print_every=1000, ckpt_e
       print_loss_total = 0
       print('%s (%d %d%%) %.4f' % (timeSince(start, iter / n_iters), iter, iter / n_iters * 100, print_loss_avg))
 
-def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
+def sampleRandomly(target_tensor):
+  print(target_tensor)
+
+def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH, use_random=False):
   with torch.no_grad():
     i_tensor = tensorFromSentence(i_data, sentence)
     input_length = i_tensor.size()[0]
@@ -357,6 +360,8 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
         decoder_input, decoder_hidden, encoder_outputs
       )
       decoder_attentions[di] = decoder_attention.data
+      if use_random:
+        sampleRandomly(decoder_output)
       topv, topi = decoder_output.data.topk(1)
       if topi.item() == EOS_TOKEN:
         decoded_words.append('<EOS>')
@@ -373,7 +378,7 @@ def evaluateRandomly(encoder, decoder, n=10):
     pair = random.choice(pairs)
     print('>', pair[0])
     print('=', pair[1])
-    output_words, attentions = evaluate(encoder, decoder, pair[0])
+    output_words, attentions = evaluate(encoder, decoder, pair[0], use_random=True)
     output_sentence = ' '.join(output_words)
     print('<', output_sentence)
     print('')
@@ -382,7 +387,7 @@ h_size = 256
 encoder1 = EncoderRNN(i_data.n_words, h_size).to(device)
 attn_decoder1 = AttnDecoderRNN(h_size, t_data.n_words, dropout_p=0.1).to(device)
 
-trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
+trainIters(encoder1, attn_decoder1, 75, print_every=5000)
 evaluateRandomly(encoder1, attn_decoder1)
 
 run = True

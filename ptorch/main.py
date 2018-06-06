@@ -26,7 +26,7 @@ class Data:
     self.name = name
     self.word2count = {}
     self.index2word = {SOS_TOKEN: "SOS", EOS_TOKEN: "EOS", UNKNOWN_TOKEN: "UNK"}
-    self.word2index = {w: ind for (w, ind) in self.index2word}
+    self.word2index = {self.index2word[w]: w for w in self.index2word}
     self.n_words = len(self.index2word)
 
   def addSentence(self, sentence):
@@ -53,7 +53,7 @@ def unicodeToAscii(s):
 def normalizeString(s):
     s = unicodeToAscii(s.lower().strip())
     s = re.sub(r"([.!?])", r" \1", s)
-    s = re.sub(r"[^a-zA-Z.!?]+", r" ", s)
+    s = re.sub(r"[^a-zA-Z.!?:]+", r" ", s)
     return s      
 
 def readData(i_file, t_file, samples=2000, data_path="data", reverse=False):

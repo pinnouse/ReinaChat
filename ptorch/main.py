@@ -18,14 +18,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 SOS_TOKEN = 0 # Start of sequence token index
 EOS_TOKEN = 1 # End of sequence token index
+UNKNOWN_TOKEN = 2
 
 # Language processing
 class Data:
   def __init__(self, name):
     self.name = name
-    self.word2index = {"UNK": 0}
     self.word2count = {}
-    self.index2word = {0: "SOS", 1: "EOS", 2: "UNK"}
+    self.index2word = {SOS_TOKEN: "SOS", EOS_TOKEN: "EOS", UNKNOWN_TOKEN: "UNK"}
+    self.word2index = {w: ind for (w, ind) in self.index2word}
     self.n_words = len(self.index2word)
 
   def addSentence(self, sentence):
@@ -339,7 +340,7 @@ def sampleRandomly(target_tensor, probability=0.85, threshold=0.92):
   for i, score in index2scores:
     if i != selected_index:
       score_proportion = score / selected_score
-      if score_proportion < threshold and random.random() < probability * abs(score_proportion):
+      if score_proportion < threshold and random.random() < probability * abs(score_proportion): # If above threshold and probability (weighted towards score)
         selected_index = i
   
   return selected_index

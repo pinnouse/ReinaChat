@@ -68,7 +68,7 @@ def unicodeToAscii(s):
 def normalizeString(s):
     s = unicodeToAscii(s.lower().strip())
     s = re.sub(r"([.!?])", r" \1", s)
-    s = re.sub(r"[^a-zA-Z.!?:]+", r" ", s)
+    s = re.sub(r"[^a-zA-Z.!?:$]+", r" ", s)
     return s      
 
 def readData(i_file, t_file, samples=2000, data_path="data", reverse=False):
@@ -300,7 +300,7 @@ def saveCheckpoint(state, is_best, iteration, output_dir='output', filename='che
   output_dir = output_dir + os.sep
   if is_best:
     print("=> Saving new best")
-    torch.save(state, os.path.join(here, output_dir + filename + '-' + iteration + '.pth.tar')) # Save checkpoint state
+    torch.save(state, os.path.join(here, output_dir + filename + '-' + str(iteration) + '.pth.tar')) # Save checkpoint state
   else:
     print("=> Validation accuracy did not improve")
 

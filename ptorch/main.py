@@ -23,9 +23,9 @@ EOS_TOKEN = 1 # End of sequence token index
 class Data:
   def __init__(self, name):
     self.name = name
-    self.word2index = {}
+    self.word2index = {"UNK": 0}
     self.word2count = {}
-    self.index2word = {0: "SOS", 1: "EOS"}
+    self.index2word = {0: "SOS", 1: "EOS", 2: "UNK"}
     self.n_words = len(self.index2word)
 
   def addSentence(self, sentence):
@@ -192,7 +192,7 @@ class AttnDecoderRNN(nn.Module):
     return torch.zeros(1, 1, self.h_size, device=device)
 
 def indexFromSentence(data, sentence):
-  return [data.word2index[word] for word in sentence.split(' ')]
+  return [data.word2index[word] if word in data.word2index.keys() else data.word2index["UNK"] for word in sentence.split(' ')]
 
 def tensorFromSentence(data, sentence):
   indeces = indexFromSentence(data, sentence)
@@ -330,8 +330,19 @@ def trainIters(encoder, decoder, n_iters, start_iter=1, print_every=1000, ckpt_e
       print_loss_total = 0
       print('%s (%d %d%%) %.4f' % (timeSince(start, iter / n_iters), iter, iter / n_iters * 100, print_loss_avg))
 
-def sampleRandomly(target_tensor):
-  print(target_tensor)
+def sampleRandomly(target_tensor, probability=0.85, threshold=0.92):
+  top_scores = target_tensor.tolist()[0]
+  index2scores = list(zip(range(len(top_scores)), top_scores)) # Zip by (word index, top score)
+  index2scores = sorted(index2scores, key=lambda x: x[1], reverse=True) # Sort by scores
+
+  selected_index, selected_score = index2scores[0]
+  for i, score in index2scores:
+    if i != selected_index:
+      score_proportion = score / selected_score
+      if score_proportion < threshold and random.random() < probability * abs(score_proportion):
+        selected_index = i
+  
+  return selected_index
 
 def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH, use_random=False):
   with torch.no_grad():
@@ -360,17 +371,23 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH, use_random=False
         decoder_input, decoder_hidden, encoder_outputs
       )
       decoder_attentions[di] = decoder_attention.data
+
+      tempW = ""
       if use_random:
-        sampleRandomly(decoder_output)
-      topv, topi = decoder_output.data.topk(1)
-      if topi.item() == EOS_TOKEN:
+        randomSample = sampleRandomly(decoder_output)
+        tempW = randomSample
+        decoder_input = torch.tensor(tempW, device=device)
+      else:
+        topv, topi = decoder_output.data.topk(1)
+        tempW = topi.item()
+        decoder_input = topi.squeeze().detach()
+
+      if tempW == EOS_TOKEN:
         decoded_words.append('<EOS>')
         break
       else:
-        decoded_words.append(t_data.index2word[topi.item()])
+        decoded_words.append(t_data.index2word[tempW])
 
-      decoder_input = topi.squeeze().detach()
-    
     return decoded_words, decoder_attentions[:di + 1]
 
 def evaluateRandomly(encoder, decoder, n=10):
@@ -395,7 +412,8 @@ while run:
   try:
     output_words, attentions = evaluate(
       encoder1, attn_decoder1,
-      input('>')
+      input('>'),
+      use_random=True
     )
     output_sentence = ' '.join(output_words)
     print('<', output_sentence)

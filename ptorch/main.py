@@ -4,6 +4,7 @@ import unicodedata
 import string
 import re
 import random
+import configparser
 
 import os.path
 
@@ -16,9 +17,23 @@ here = os.path.dirname(__file__)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+config = configparser.ConfigParser()
+config.read('config.ini')
+
 SOS_TOKEN = 0 # Start of sequence token index
 EOS_TOKEN = 1 # End of sequence token index
 UNKNOWN_TOKEN = 2
+
+samples = int(config['DEFAULT']['samples'])
+MAX_LENGTH = int(config['DEFAULT']['max_length'])
+
+h_size = int(config['DEFAULT']['hidden_size'])
+
+n_iters = int(config['DEFAULT']['number_iters'])
+PRINT_EVERY = int(config['DEFAULT']['print_every'])
+
+probability = float(config['evaluator']['probability'])
+threshold = float(config['evaluator']['threshold'])
 
 # Language processing
 class Data:
@@ -94,8 +109,6 @@ def readData(i_file, t_file, samples=2000, data_path="data", reverse=False):
 
   return i_data, t_data, pairs
 
-MAX_LENGTH = 20
-
 def filterPair(p):
   return len(p[0].split(' ')) < MAX_LENGTH and \
     len(p[1].split(' ')) < MAX_LENGTH
@@ -118,7 +131,7 @@ def prepareData(i_file, t_file, samples=2000, data_path="data", reverse=False):
   print(t_data.name, t_data.n_words)
   return i_data, t_data, pairs
 
-i_data, t_data, pairs = prepareData("train.to", "train.from", reverse=True)
+i_data, t_data, pairs = prepareData("train.to", "train.from", samples=samples, reverse=True)
 
 class EncoderRNN(nn.Module):
   def __init__(self, i_size, h_size):
@@ -375,7 +388,7 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH, use_random=False
 
       tempW = ""
       if use_random:
-        randomSample = sampleRandomly(decoder_output)
+        randomSample = sampleRandomly(decoder_output, probability, threshold)
         tempW = randomSample
         decoder_input = torch.tensor(tempW, device=device)
       else:
@@ -401,11 +414,10 @@ def evaluateRandomly(encoder, decoder, n=10):
     print('<', output_sentence)
     print('')
 
-h_size = 256
 encoder1 = EncoderRNN(i_data.n_words, h_size).to(device)
 attn_decoder1 = AttnDecoderRNN(h_size, t_data.n_words, dropout_p=0.1).to(device)
 
-trainIters(encoder1, attn_decoder1, 75, print_every=5000)
+trainIters(encoder1, attn_decoder1, n_iters, print_every=PRINT_EVERY)
 evaluateRandomly(encoder1, attn_decoder1)
 
 run = True

@@ -3,3 +3,4 @@
 *.pyc
 *.tar
 *.ini
+*__pycache__

@@ -100,9 +100,9 @@ max_decoder_seq_length = max([len(tokenizer.tokenize(txt)) for txt in target_tex
 
 print("Samples:", min(len(input_text), len(target_text)))
 print("Unique input tokens:", num_encoder_tokens)
-print("Input dictionary:", input_words)
+#print("Input dictionary:", input_words)
 print("Unique output tokens:", num_decoder_tokens)
-print("Target dictionary:", target_words)
+#print("Target dictionary:", target_words)
 print("Max seq length for input:", max_encoder_seq_length)
 print("Max seq length for output:", max_decoder_seq_length)
 

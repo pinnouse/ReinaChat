@@ -16,7 +16,7 @@ from keras.layers import Input, LSTM, Dense
 ### CONSTANTS
 here = os.path.dirname(__file__)
 
-tokenizer = RegexpTokenizer(r'\w+|\<[A-Z]+\>|\$[a-z]+|&[a-z]+;|[a-z]?\'[a-z]+|[.?!]') # Special commands are: $command
+tokenizer = RegexpTokenizer(r'\w|\<[A-Z]+\>|\$[a-z]+|&[a-z]+;|[a-z]?\'[a-z]+|[.?!]') # Special commands are: $command
 blacklist_pattern = r'http://[a-z]*'
 
 config = configparser.ConfigParser()
@@ -63,10 +63,10 @@ for i in range(small_samp_size):
     target_text = "<GO> " + line_dec[i] + " <EOS>"
     
     # print(tokenizer.tokenize(input_text))
-    if len(tokenizer.tokenize(input_text)) > max_seq_len:
-        input_text = " ".join(tokenizer.tokenize(input_text)[:max_seq_len])
-    if len(tokenizer.tokenize(target_text)) > max_seq_len:
-        target_text = " ".join(tokenizer.tokenize(target_text)[:max_seq_len-1]) + " <EOS"
+    if len(input_text.split(' ')) > max_seq_len:
+        input_text = " ".join(input_text.split(' ')[:max_seq_len])
+    if len(target_text.split(' ')) > max_seq_len:
+        target_text = " ".join(target_text.split(' ')[:max_seq_len-1]) + " <EOS>"
 
     for w in tokenizer.tokenize(input_text):
         if w not in input_words:

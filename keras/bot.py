@@ -16,7 +16,7 @@ from keras.layers import Input, LSTM, Dense
 ### CONSTANTS
 here = os.path.dirname(__file__)
 
-tokenizer = RegexpTokenizer(r'\w|\<[A-Z]+\>|\$[a-z]+|&[a-z]+;|[a-z]?\'[a-z]+|[.?!]') # Special commands are: $command
+tokenizer = RegexpTokenizer(r'\w+|\<[A-Z]+\>|\$[a-z]+|&[a-z]+;|[a-z]?\'[a-z]+|[.?!]') # Special commands are: $command
 blacklist_pattern = r'http://[a-z]*'
 
 config = configparser.ConfigParser()

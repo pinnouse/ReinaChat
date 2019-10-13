@@ -90,7 +90,7 @@ def sample(a, randomness=1):
     total_score = sum(sorted_scores)
     choice = random.random() * total_score
     guess = 0
-    for i in list(sorted_indeces):
+    for i in range(len(sorted_indeces)):
         guess += sorted_scores[i]
         if choice >= guess:
             return sorted_indeces[i]

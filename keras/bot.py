@@ -201,17 +201,23 @@ def sample(a, randomness=1):
     sorted_weights = []
     for i in max_score_indeces:
         sorted_weights.append((i, a[i]))
-    sorted_weights, sorted_scores = zip(*sorted(sorted_weights, key=lambda x:float(x[1]), reverse=True))
+    sorted_indeces, sorted_scores = zip(*sorted(sorted_weights, key=lambda x:float(x[1]), reverse=True))
+    """
     for i in range(len(sorted_scores) - 1):
         if i > 0:
             if sorted_scores[i] * 0.90 > sorted_scores[i]: #if the next score is not within 90% of the initial one, cut the scoring
-                sorted_weights = sorted_weights[:i]
+                sorted_indeces = sorted_indeces[:i]
                 break
     # print(list(sorted_weights))
-    for i in list(sorted_weights):
-        if random.random() < 0.8:
-            return i
-    return sorted_weights[0]
+    """
+    total_score = sum(sorted_scores)
+    choice = random.random() * total_score
+    guess = 0
+    for i in list(sorted_indeces):
+        guess += sorted_scores[i]
+        if choice >= guess:
+            return sorted_indeces[i]
+    return sorted_indeces[0]
 
 def decode_sequence(input_seq):
     states_value = encoder_model.predict(input_seq)
@@ -224,7 +230,7 @@ def decode_sequence(input_seq):
         output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
 
         # sampled_token_index = np.argmax(output_tokens[0, -1, :])
-        sampled_token_index = sample(output_tokens[0, -1, :], 2)
+        sampled_token_index = sample(output_tokens[0, -1, :], 4)
         sampled_w = reverse_target_w_index[sampled_token_index]
         # print("sampled token index:", sampled_token_index, "word:", sampled_w)
         decoded_sentence += sampled_w + " "

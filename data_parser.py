@@ -11,4 +11,5 @@ with open(op.join(op.dirname(__file__), sys.argv[2]), 'r') as f:
     o = f.read().split('\n')
 with open(op.join(op.dirname(__file__), sys.argv[3]), 'w') as f:
     for ind in range(min(len(i), len(o))):
-        f.write(i[ind] + '+++$+++' + o[ind] + '\n')
+        if i[ind] != '' and o[ind] != '':
+            f.write(i[ind] + '+++$+++' + o[ind] + '\n')

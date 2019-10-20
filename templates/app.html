@@ -1,0 +1,8 @@
+<form action="/web" method="GET">
+    You >> <input type="text" name="s" autofocus><br />
+    <input type="submit" value="Submit">
+</form>
+
+{% if output %}
+    <strong>Bot >> </strong> <i>{{ output }}</i>
+{% endif %}

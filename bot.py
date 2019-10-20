@@ -20,7 +20,7 @@ tokenizer = RegexpTokenizer(r'\w+|\<[A-Z]+\>|\$[a-z]+|&[a-z]+;|[a-z]?\'[a-z]+|[.
 blacklist_pattern = r'http://[a-z]*'
 
 config = configparser.ConfigParser()
-conf_file = os.path.join(here, 'bot-config.ini')
+conf_file = os.path.join(here, 'config.ini')
 config.read(conf_file)
 
 batch_size = int(config['DEFAULT']['batch_size'])

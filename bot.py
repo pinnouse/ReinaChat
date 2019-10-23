@@ -29,7 +29,7 @@ latent_dim = int(config['DEFAULT']['latent_dim'])
 num_samples = int(config['DEFAULT']['num_samples'])
 
 data_path = config['DEFAULT']['data_path']
-training_data = list(config['DEFAULT']['data'])
+training_data = config['DEFAULT']['data'].split(',')
 vocab_size = int(config['DEFAULT']['vocab_size'])
 
 max_seq_len = int(config['DEFAULT']['max_seq_len'])
@@ -210,7 +210,7 @@ def sample(a, randomness=1):
     total_score = sum(sorted_scores)
     choice = random.random() * total_score
     guess = 0
-    for i in list(sorted_indeces):
+    for i in range(len(sorted_indeces)):
         guess += sorted_scores[i]
         if choice >= guess:
             return sorted_indeces[i]

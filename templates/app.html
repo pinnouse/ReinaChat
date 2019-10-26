@@ -1,8 +1,82 @@
-<form action="/web" method="GET">
-    You >> <input type="text" name="s" autofocus><br />
-    <input type="submit" value="Submit">
-</form>
+<!DOCTYPE html>
 
-{% if output %}
-    <strong>Bot >> </strong> <i>{{ output }}</i>
-{% endif %}
+<html>
+    <head>
+        <title>Chat</title>
+        <style>
+            body {
+                color: #fff;
+                background-color: #232b36;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            .container {
+                width: 80vw;
+                margin: 0 auto;
+                padding: 60px;
+            }
+
+            .container > * {
+                margin: 20px 0;
+            }
+
+            .input input {
+                margin: 10px;
+            }
+
+            input[type=text] {
+                outline: none;
+                border: none;
+                border-bottom: 4px solid #6f6f6f;
+                color: #fff;
+                background: #606768;
+                padding: 18px;
+                width: 60%;
+                transition: 250ms;
+            }
+
+            input[type=text]:focus {
+                outline: none;
+                border: none;
+                border-bottom: 4px solid #fff;
+                background: #4e5455;
+            }
+
+            input[type=submit] {
+                padding: 10px 20px;
+                font-size: 1.2em;
+                background: #3d555f0e;
+                color: #fff;
+                border: 1px solid #fff;
+                outline: none;
+                transition: 460ms;
+            }
+
+            input[type=submit]:hover {
+                outline: none;
+                background: #3d555f77;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Chatbot Web</h1>
+            <div class="input">
+                <h2>You</h2>
+                <form action="/web" method="GET">
+                    <input type="text" name="s" placeholder="Your statement here" autofocus><br />
+                    <input type="submit" value="Send">
+                </form>
+            </div>
+            
+            <div class="output">
+                {% if output %}
+                <h2>Bot</h2>
+                <i>{{ output }}</i>
+                {% endif %}
+            </div>
+        </div>
+    </body>
+</html>
+

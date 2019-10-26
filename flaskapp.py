@@ -5,7 +5,7 @@ from collections import OrderedDict
 import vocab_builder
 here = os.path.dirname(__file__)
 config = ConfigParser()
-config.read(os.path.join(here, 'bot-config.ini'))
+config.read(os.path.join(here, 'config.ini'))
 batch_size = int(config['DEFAULT']['batch_size'])
 epochs = int(config['DEFAULT']['epochs'])
 latent_dim = int(config['DEFAULT']['latent_dim'])
@@ -46,6 +46,7 @@ model.compile(optimizer='adam', loss='categorical_crossentropy')
 
 data = (max_seq_len, num_samples, epochs, batch_size, latent_dim, vocab_size)
 model_location = os.path.join(here, "model/bot-%d %dsamples (%d-%d-%d-%d).h5" % data)
+from keras.models import load_model
 model.load_weights(model_location)
 model._make_predict_function()
 model.summary()
@@ -71,15 +72,25 @@ import numpy as np
 import random
 from nltk.tokenize import RegexpTokenizer
 
-def sample(a, randomness=1):
+'''a
+def sample(a, temperature=1.0, randomness=1):
+    a = np.array(a) ** (1/temperature)
+    p_sum = sum(a)
+    for i in range(len(a)):
+        a[i] = a[i]/p_sum
+    return np.argmax(np.random.multinomial(1, a, 1))
+'''
+
+def sample(a, temperature=1.0,  randomness=1):
     # randomness is how many other words may be possible
-    a = np.array(a)
+    a = np.array(a) ** (1/temperature)
     max_score_indeces = a.argsort()[-(1+randomness):][::-1]
     sorted_weights = []
     for i in max_score_indeces:
         sorted_weights.append((i, a[i]))
     sorted_indeces, sorted_scores = zip(*sorted(sorted_weights, key=lambda x:float(x[1]), reverse=True))
-    """
+    
+    """a
     for i in range(len(sorted_scores) - 1):
         if i > 0:
             if sorted_scores[i] * 0.90 > sorted_scores[i]: #if the next score is not within 90% of the initial one, cut the scoring
@@ -87,12 +98,14 @@ def sample(a, randomness=1):
                 break
     # print(list(sorted_weights))
     """
+    
     total_score = sum(sorted_scores)
     choice = random.random() * total_score
     guess = 0
     for i in range(len(sorted_indeces)):
         guess += sorted_scores[i]
-        if choice >= guess:
+        if choice <= guess:
+            #print(sorted_indeces[i], ': ', sorted_scores[i])
             return sorted_indeces[i]
     return sorted_indeces[0]
 
@@ -107,13 +120,14 @@ def decode_sequence(input_seq):
         output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
 
         # sampled_token_index = np.argmax(output_tokens[0, -1, :])
-        sampled_token_index = sample(output_tokens[0, -1, :], 2)
+        sampled_token_index = sample(output_tokens[0, -1, :], 1.2, 15)
         sampled_w = list(target_token_index.keys())[sampled_token_index]
         # print("sampled token index:", sampled_token_index, "word:", sampled_w)
         decoded_sentence += sampled_w + " "
 
         if sampled_w == "<EOS>" or len(decoded_sentence.split(' ')) > max_seq_len:
             stop_condition = True
+            decoded_sentence = decoded_sentence.replace("<EOS>", "")
         
         target_seq = np.zeros((1, 1, num_decoder_tokens))
         target_seq[0, 0, sampled_token_index] = 1.

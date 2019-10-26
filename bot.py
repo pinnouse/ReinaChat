@@ -12,6 +12,7 @@ import random
 import numpy as np
 from keras.models import Model
 from keras.layers import Input, LSTM, Dense
+from keras.callbacks import ModelCheckpoint
 
 ### CONSTANTS
 here = os.path.dirname(__file__)
@@ -177,7 +178,22 @@ for e in range(epochs+1, 1, -1):
         break
 
 if not model_found or (model_found and loaded_epoch < epochs):
-    model.fit([encoder_input_data, decoder_input_data], decoder_target_data, batch_size=batch_size, epochs=(epochs-loaded_epoch), validation_split=0.18)
+    #Train
+    path="model/bot-%d %dsamples ({epoch}-%d-%d-%d).h5" % (
+        max_seq_len,
+        num_samples,
+        batch_size,
+        latent_dim,
+        vocab_size
+        )
+    checkpoint = ModelCheckpoint(path, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
+    model.fit(
+        [encoder_input_data, decoder_input_data],
+        decoder_target_data,
+        batch_size=batch_size,
+        callbacks=[checkpoint],
+        epochs=(epochs-loaded_epoch),
+        validation_split=0.05)
     model.save(model_location)
 
 encoder_model = Model(encoder_inputs, encoder_states)

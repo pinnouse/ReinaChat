@@ -12,6 +12,7 @@ import random
 import numpy as np
 from keras.models import Model
 from keras.layers import Input, LSTM, Dense
+from keras.callbacks import ModelCheckpoint
 
 ### CONSTANTS
 here = os.path.dirname(__file__)
@@ -29,7 +30,7 @@ latent_dim = int(config['DEFAULT']['latent_dim'])
 num_samples = int(config['DEFAULT']['num_samples'])
 
 data_path = config['DEFAULT']['data_path']
-training_data = list(config['DEFAULT']['data'])
+training_data = config['DEFAULT']['data'].split(',')
 vocab_size = int(config['DEFAULT']['vocab_size'])
 
 max_seq_len = int(config['DEFAULT']['max_seq_len'])
@@ -156,13 +157,52 @@ decoder_outputs = decoder_dense(decoder_outputs)
 model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 model.compile(optimizer='adam', loss='categorical_crossentropy')
 
-data = (max_seq_len, num_samples, epochs, batch_size, latent_dim, vocab_size)
+from keras.models import load_model
+from numpy .testing import assert_allclose
+model_found = True
+loaded_epoch = 0
+for e in range(epochs+1, 1, -1):
+    model_location = os.path.join(here, "model/bot-%d %dsamples (%d-%d-%d-%d).h5" % (
+        max_seq_len,
+        num_samples,
+        e,
+        batch_size,
+        latent_dim,
+        vocab_size
+        )
+    )
+    if os.path.isfile(model_location):
+        model_found = True
+        loaded_epoch = e
+        print("Previous model found with epoch: %d" % e)
+        model.load_weights(model_location)
+        new_model = load_model(model_location)
+        # Raise assertion error if of difference 1e-5
+        assert_allclose(
+            model.predict([encoder_inputs, decoder_inputs]),
+            new_model.predict([encoder_inputs, decoder_inputs]),
+            1e-5
+            )
+        break
 
-model_location = os.path.join(here, "model/bot-%d %dsamples (%d-%d-%d-%d).h5" % data)
-if os.path.isfile(model_location):
-    model.load_weights(model_location)
-else:
-    model.fit([encoder_input_data, decoder_input_data], decoder_target_data, batch_size=batch_size, epochs=epochs, validation_split=0.2)
+if not model_found or (model_found and loaded_epoch < epochs):
+    #Train
+    path="model/bot-%d %dsamples ({epoch}-%d-%d-%d).h5" % (
+        max_seq_len,
+        num_samples,
+        batch_size,
+        latent_dim,
+        vocab_size
+        )
+    checkpoint = ModelCheckpoint(path, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
+    model = new_model
+    model.fit(
+        [encoder_input_data, decoder_input_data],
+        decoder_target_data,
+        batch_size=batch_size,
+        callbacks=[checkpoint],
+        epochs=(epochs-loaded_epoch),
+        validation_split=0.05)
     model.save(model_location)
 
 encoder_model = Model(encoder_inputs, encoder_states)
@@ -183,15 +223,15 @@ decoder_model = Model(
 reverse_input_w_index = dict((i, w) for w, i in input_token_index.items())
 reverse_target_w_index = dict((i, w) for w, i in target_token_index.items())
 
-# def sample(a, temperature=1.0):
-#     a = np.array(a)**(1/temperature)
-#     p_sum = sum(a)
-#     for i in range(len(a)):
-#         a[i] = a[i]/p_sum
-#     print('a:', sum(a))
-#     return np.argmax(np.random.multinomial(1, a, 1))
+def sample(a, temperature=1.0):
+     a = np.array(a)**(1/temperature)
+     p_sum = sum(a)
+     for i in range(len(a)):
+         a[i] = a[i]/p_sum
+     print('a:', sum(a))
+     return np.argmax(np.random.multinomial(1, a, 1))
 
-def sample(a, randomness=1):
+'''def sample(a, randomness=1):
     # randomness is how many other words may be possible
     a = np.array(a)
     max_score_indeces = a.argsort()[-(1+randomness):][::-1]
@@ -210,11 +250,11 @@ def sample(a, randomness=1):
     total_score = sum(sorted_scores)
     choice = random.random() * total_score
     guess = 0
-    for i in list(sorted_indeces):
+    for i in range(len(sorted_indeces)):
         guess += sorted_scores[i]
         if choice >= guess:
             return sorted_indeces[i]
-    return sorted_indeces[0]
+    return sorted_indeces[0]'''
 
 def decode_sequence(input_seq):
     states_value = encoder_model.predict(input_seq)
@@ -258,7 +298,7 @@ def sentence_to_seq(sentence):
 
     return (seq, read_sentence)
 
-for seq_index in range(10):
+for seq_index in range(20):
     # Take one sequence (part of the training set)
     # for trying out decoding.
     input_seq = encoder_input_data[seq_index:seq_index+1]

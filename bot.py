@@ -158,6 +158,7 @@ model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 model.compile(optimizer='adam', loss='categorical_crossentropy')
 
 from keras.models import load_model
+from numpy .testing import assert_allclose
 model_found = True
 loaded_epoch = 0
 for e in range(epochs+1, 1, -1):
@@ -174,7 +175,14 @@ for e in range(epochs+1, 1, -1):
         model_found = True
         loaded_epoch = e
         print("Previous model found with epoch: %d" % e)
-        model = load_model(model_location)
+        model.load_weights(model_location)
+        new_model = load_model(model_location)
+        # Raise assertion error if of difference 1e-5
+        assert_allclose(
+            model.predict([encoder_inputs, decoder_inputs]),
+            new_model.predict([encoder_inputs, decoder_inputs]),
+            1e-5
+            )
         break
 
 if not model_found or (model_found and loaded_epoch < epochs):
@@ -187,6 +195,7 @@ if not model_found or (model_found and loaded_epoch < epochs):
         vocab_size
         )
     checkpoint = ModelCheckpoint(path, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
+    model = new_model
     model.fit(
         [encoder_input_data, decoder_input_data],
         decoder_target_data,

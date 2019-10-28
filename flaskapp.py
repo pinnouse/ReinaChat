@@ -291,7 +291,7 @@ loop.run_until_complete(train_every(1000 * 60 * 5, model, [
     batch_size,
     latent_dim,
     vocab_size
-], (encoder_inputs, decoder_inputs, decoder_outputs)))
+], (encoder_input_data, decoder_input_dat, decoder_output_data)))
 loop.close()
 
 import json

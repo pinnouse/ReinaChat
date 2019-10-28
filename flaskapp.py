@@ -77,6 +77,7 @@ for i in range(small_samp_size):
     input_texts.append(input_text)
     target_texts.append(target_text)
 
+"""
 input_token_index = OrderedDict()
 target_token_index = OrderedDict()
 num_encoder_tokens = 0
@@ -89,6 +90,11 @@ with open(os.path.join(here, data_path + 'tg.vocab'), 'r', encoding='utf-8', err
         target_token_index[str(row).rstrip()] = i
 num_encoder_tokens = len(input_token_index)
 num_decoder_tokens = len(target_token_index)
+"""
+input_words = vocab_builder.build_vocab(input_words)
+target_words = vocab_builder.build_vocab(target_words)
+num_encoder_tokens = len(input_words)
+num_decoder_tokens = len(target_words)
 
 max_encoder_seq_length = max([len(tokenizer.tokenize(txt)) for txt in input_texts])
 max_decoder_seq_length = max([len(tokenizer.tokenize(txt)) for txt in target_texts])

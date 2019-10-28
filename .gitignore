@@ -1,5 +1,6 @@
 *.log
 *.h5
+*.hdf5
 *.pyc
 *.tar
 *.ini
@@ -7,3 +8,4 @@
 
 *.vocab
 *.train
+

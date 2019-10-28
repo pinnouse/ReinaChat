@@ -155,7 +155,7 @@ decoder_dense = Dense(num_decoder_tokens, activation='softmax')
 decoder_outputs = decoder_dense(decoder_outputs)
 
 model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
-model.compile(optimizer='adam', loss='categorical_crossentropy')
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
 from keras.models import load_model
 from numpy .testing import assert_allclose
@@ -203,7 +203,7 @@ if not model_found or (model_found and loaded_epoch < epochs):
         latent_dim,
         vocab_size
         )
-    checkpoint = ModelCheckpoint(path, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
+    checkpoint = ModelCheckpoint(path, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
     if model_found:
         model = new_model
     model.fit(

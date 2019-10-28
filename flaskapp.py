@@ -3,7 +3,15 @@ import os.path
 from configparser import ConfigParser
 from collections import OrderedDict
 import vocab_builder
+import numpy as np
+import nltk
+from nltk.tokenize import RegexpTokenizer
+
 here = os.path.dirname(__file__)
+
+tokenizer = RegexpTokenizer(r'\w+|\<[A-Z]+\>|\$[a-z]+|&[a-z]+;|[a-z]?\'[a-z]+|[.?!]') # Special commands are: $command
+blacklist_pattern = r'http://[a-z]*'
+
 config = ConfigParser()
 config.read(os.path.join(here, 'config.ini'))
 batch_size = int(config['DEFAULT']['batch_size'])
@@ -11,8 +19,63 @@ epochs = int(config['DEFAULT']['epochs'])
 latent_dim = int(config['DEFAULT']['latent_dim'])
 num_samples = int(config['DEFAULT']['num_samples'])
 data_path = config['DEFAULT']['data_path']
+training_data = config['DEFAULT']['data'].split(',')
 vocab_size = int(config['DEFAULT']['vocab_size'])
 max_seq_len = int(config['DEFAULT']['max_seq_len'])
+
+input_texts = []
+target_texts = []
+input_words = dict([("<UNK>", 0)])
+target_words = dict([("<GO>", 0), ("<UNK>", 0), ("<EOS>", 0)])
+
+line_enc = []
+line_dec = []
+
+for file_name in training_data:
+    with open(os.path.join(here, data_path + file_name), 'r', encoding='utf-8', errors='ignore') as f:
+        line = f.readline()
+        while line != '' and len(line_enc) < num_samples:
+            data = line.split('+++$+++')
+            line_enc.append(data[0])
+            line_dec.append(data[1])
+            line = f.readline()
+
+small_samp_size = min([num_samples, len(line_enc)-1, len(line_dec)-1])
+if len(line_enc) > num_samples or len(line_dec) > num_samples:
+    line_enc = line_enc[:small_samp_size]
+    line_dec = line_dec[:small_samp_size]
+
+for i in range(small_samp_size):
+    input_text = line_enc[i].lower()
+    target_text = "<GO> " + line_dec[i] + " <EOS>"
+    
+    # print(tokenizer.tokenize(input_text))
+    if len(input_text.split(' ')) > max_seq_len:
+        input_text = " ".join(input_text.split(' ')[:max_seq_len])
+    if len(target_text.split(' ')) > max_seq_len:
+        target_text = " ".join(target_text.split(' ')[:max_seq_len-1]) + " <EOS>"
+
+    for w in tokenizer.tokenize(input_text):
+        if w not in input_words:
+            if len(input_words) < vocab_size:
+                input_words.update({w: 1})
+            else:
+                input_text.replace(w, "<UNK>")
+                w="<UNK>"
+        else:
+            input_words[w] += 1
+    for w in tokenizer.tokenize(target_text):
+        if w not in target_words:
+            if len(target_words) < vocab_size:
+                target_words.update({w: 1})
+            else:
+                target_text.replace(w, "<UNK>")
+                w="<UNK>"
+        else:
+            target_words[w] += 1
+
+    input_texts.append(input_text)
+    target_texts.append(target_text)
 
 input_token_index = OrderedDict()
 target_token_index = OrderedDict()
@@ -26,6 +89,55 @@ with open(os.path.join(here, data_path + 'tg.vocab'), 'r', encoding='utf-8', err
         target_token_index[str(row).rstrip()] = i
 num_encoder_tokens = len(input_token_index)
 num_decoder_tokens = len(target_token_index)
+
+max_encoder_seq_length = max([len(tokenizer.tokenize(txt)) for txt in input_texts])
+max_decoder_seq_length = max([len(tokenizer.tokenize(txt)) for txt in target_texts])
+
+print("Samples:", min(len(input_text), len(target_text)))
+print("Unique input tokens:", num_encoder_tokens)
+#print("Input dictionary:", input_words)
+print("Unique output tokens:", num_decoder_tokens)
+#print("Target dictionary:", target_words)
+print("Max seq length for input:", max_encoder_seq_length)
+print("Max seq length for output:", max_decoder_seq_length)
+
+# Dictionaries containing word to id
+input_token_index = dict([w, i] for i, w in enumerate(input_words))
+target_token_index = dict([w, i] for i, w in enumerate(target_words))
+
+# Free memory
+input_words = None
+target_words = None
+line_enc = None
+line_dec = None
+
+
+# Create three dimensional arrays
+# For each sentence -> maximum words -> binary of word index in B.O.W on or off
+encoder_input_data = np.zeros(
+    shape=(len(input_texts), max_encoder_seq_length, num_encoder_tokens),
+    dtype='float32'
+)
+decoder_input_data = np.zeros(
+    shape=(len(input_texts), max_decoder_seq_length, num_decoder_tokens),
+    dtype='float32'
+)
+decoder_target_data = np.zeros(
+    shape=(len(input_texts), max_decoder_seq_length, num_decoder_tokens),
+    dtype='float32'
+)
+
+for i, (input_text, target_text) in enumerate(zip(input_texts, target_texts)):
+    for t, w in enumerate(tokenizer.tokenize(input_text)):
+        if w not in input_token_index:
+            w = "<UNK>"
+        encoder_input_data[i, t, input_token_index[w]] = 1.
+    for t, w in enumerate(tokenizer.tokenize(target_text)):
+        if w not in target_token_index:
+            w = "<UNK>"
+        decoder_input_data[i, t, target_token_index[w]] = 1.
+        if t > 0:
+            decoder_target_data[i, t-1, target_token_index[w]] = 1.
 
 from keras import Model
 from keras.layers import Input, LSTM, Dense
@@ -70,7 +182,6 @@ decoder_model._make_predict_function()
 
 import numpy as np
 import random
-from nltk.tokenize import RegexpTokenizer
 
 '''a
 def sample(a, temperature=1.0, randomness=1):

@@ -158,9 +158,11 @@ import asyncio
 import copy
 from keras.callbacks import ModelCheckpoint
 async def train_more():
-    path="model/bot-%d %dsamples ({epoch}-%d-%d-%d).h5" % (
+    epochs += 5
+    path="model/bot-%d %dsamples (%d-%d-%d-%d).h5" % (
         max_seq_len,
         num_samples,
+        epochs,
         batch_size,
         latent_dim,
         vocab_size

@@ -157,19 +157,19 @@ def sentence_to_seq(sentence):
 import asyncio
 import copy
 from keras.callbacks import ModelCheckpoint
-async def train_more(model, data):
+async def train_more(model, data, train_data):
     path="model/bot-%d %dsamples (%d-%d-%d-%d).h5" % data
     checkpoint = ModelCheckpoint(path, monitor='val_accuracy', verbose=0, save_best_only=True, mode='max')
     new_model = copy.deepcopy(model)
-    new_model.fit([encoder_inputs, decoder_inputs], decoder_outputs, batch_size=batch_size, callbacks=[checkpoint], verbose=0, epochs=5, validation_split=0.05)
+    new_model.fit([train_data[0], train_data[1]], train_data[2], batch_size=batch_size, callbacks=[checkpoint], verbose=0, epochs=5, validation_split=0.05)
     model = new_model
 
-async def train_every(delay, model, data):
+async def train_every(delay, model, data, train_data):
     end_condition=False
     while not end_condition:
         asyncio.sleep(delay)
         data[2] += 5 # Epochs
-        await train_more(model, zip(data)))
+        await train_more(model, zip(data)), train_data)
 # Train every 5 minutes
 # 3.7 onwards asyncio.run(train_every(1000 * 60 * 5, epochs, model))
 loop = asyncio.get_event_loop()
@@ -180,7 +180,7 @@ loop.run_until_complete(train_every(1000 * 60 * 5, epochs, model, [
     batch_size,
     latent_dim,
     vocab_size
-]))
+], (encoder_inputs, decoder_inputs, decoder_outputs)))
 loop.close()
 
 import json

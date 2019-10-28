@@ -159,7 +159,7 @@ model.compile(optimizer='adam', loss='categorical_crossentropy')
 
 from keras.models import load_model
 from numpy .testing import assert_allclose
-model_found = True
+model_found = False
 loaded_epoch = 0
 model_location = os.path.join(here, "model/bot-%d %dsamples (%d-%d-%d-%d).h5" % (
     max_seq_len,
@@ -204,7 +204,8 @@ if not model_found or (model_found and loaded_epoch < epochs):
         vocab_size
         )
     checkpoint = ModelCheckpoint(path, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
-    model = new_model
+    if model_found:
+        model = new_model
     model.fit(
         [encoder_input_data, decoder_input_data],
         decoder_target_data,

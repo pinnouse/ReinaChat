@@ -176,7 +176,9 @@ async def train_every(delay, epochs, model):
     while not end_condition:
         asyncio.sleep(delay)
         epochs += 5
-        asyncio.run(train_more(epochs, model))
+        inner_loop = asyncio.get_event_loop()
+        inner_loop.run_until_complete(train_more(epochs, model))
+        inner_loop.close()
 # Train every 5 minutes
 # 3.7 onwards asyncio.run(train_every(1000 * 60 * 5, epochs, model))
 loop = asyncio.get_event_loop()

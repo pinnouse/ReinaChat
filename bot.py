@@ -160,6 +160,7 @@ model.compile(optimizer='adam', loss='categorical_crossentropy')
 from keras.models import load_model
 from numpy .testing import assert_allclose
 model_found = False
+new_model = None
 loaded_epoch = 0
 model_location = os.path.join(here, "model/bot-%d %dsamples (%d-%d-%d-%d).h5" % (
     max_seq_len,

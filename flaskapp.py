@@ -157,8 +157,7 @@ def sentence_to_seq(sentence):
 import asyncio
 import copy
 from keras.callbacks import ModelCheckpoint
-async def train_more():
-    epochs += 5
+async def train_more(epochs, model):
     path="model/bot-%d %dsamples (%d-%d-%d-%d).h5" % (
         max_seq_len,
         num_samples,
@@ -172,13 +171,17 @@ async def train_more():
     new_model.fit([encoder_inputs, decoder_inputs], decoder_outputs, batch_size=batch_size, callbacks=[checkpoint], verbose=0, epochs=5, validation_split=0.05)
     model = new_model
 
-async def train_every(delay):
+async def train_every(delay, epochs, model):
     end_condition=False
     while not end_condition:
         asyncio.sleep(delay)
-        asyncio.run(train_more())
+        epochs += 5
+        asyncio.run(train_more(epochs, model))
 # Train every 5 minutes
-asyncio.run(train_every(1000 * 60 * 5))
+# 3.7 onwards asyncio.run(train_every(1000 * 60 * 5, epochs, model))
+loop = asyncio.get_event_loop()
+loop.run_until_complete(train_every(1000 * 60 * 5, epochs, model))
+loop.close()
 
 import json
 from flask import Flask, render_template, request

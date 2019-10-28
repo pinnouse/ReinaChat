@@ -157,30 +157,30 @@ def sentence_to_seq(sentence):
 import asyncio
 import copy
 from keras.callbacks import ModelCheckpoint
-async def train_more(epochs, model):
-    path="model/bot-%d %dsamples (%d-%d-%d-%d).h5" % (
-        max_seq_len,
-        num_samples,
-        epochs,
-        batch_size,
-        latent_dim,
-        vocab_size
-        )
+async def train_more(model, data):
+    path="model/bot-%d %dsamples (%d-%d-%d-%d).h5" % data
     checkpoint = ModelCheckpoint(path, monitor='val_accuracy', verbose=0, save_best_only=True, mode='max')
     new_model = copy.deepcopy(model)
     new_model.fit([encoder_inputs, decoder_inputs], decoder_outputs, batch_size=batch_size, callbacks=[checkpoint], verbose=0, epochs=5, validation_split=0.05)
     model = new_model
 
-async def train_every(delay, epochs, model):
+async def train_every(delay, model, data):
     end_condition=False
     while not end_condition:
         asyncio.sleep(delay)
-        epochs += 5
-        await train_more(epochs, model)
+        data[2] += 5 # Epochs
+        await train_more(model, zip(data)))
 # Train every 5 minutes
 # 3.7 onwards asyncio.run(train_every(1000 * 60 * 5, epochs, model))
 loop = asyncio.get_event_loop()
-loop.run_until_complete(train_every(1000 * 60 * 5, epochs, model))
+loop.run_until_complete(train_every(1000 * 60 * 5, epochs, model, [
+    max_seq_len,
+    num_samples,
+    epochs,
+    batch_size,
+    latent_dim,
+    vocab_size
+]))
 loop.close()
 
 import json

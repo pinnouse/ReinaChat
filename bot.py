@@ -161,6 +161,15 @@ from keras.models import load_model
 from numpy .testing import assert_allclose
 model_found = True
 loaded_epoch = 0
+model_location = os.path.join(here, "model/bot-%d %dsamples (%d-%d-%d-%d).h5" % (
+    max_seq_len,
+    num_samples,
+    epochs,
+    batch_size,
+    latent_dim,
+    vocab_size
+    )
+)
 for e in range(epochs+1, 1, -1):
     model_location = os.path.join(here, "model/bot-%d %dsamples (%d-%d-%d-%d).h5" % (
         max_seq_len,

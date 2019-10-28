@@ -154,6 +154,29 @@ def sentence_to_seq(sentence):
 
     return (seq, read_sentence)
 
+import asyncio
+import copy
+from keras.callbacks import ModelCheckpoint
+async def train_more():
+    path="model/bot-%d %dsamples ({epoch}-%d-%d-%d).h5" % (
+        max_seq_len,
+        num_samples,
+        batch_size,
+        latent_dim,
+        vocab_size
+        )
+    checkpoint = ModelCheckpoint(path, monitor='val_accuracy', verbose=0, save_best_only=True, mode='max')
+    new_model = copy.deepcopy(model)
+    new_model.fit([encoder_inputs, decoder_inputs], decoder_outputs, batch_size=batch_size, callbacks=[checkpoint], verbose=0, epochs=5, validation_split=0.05)
+    model = new_model
+
+async def train_every(delay):
+    end_condition=False
+    while not end_condition:
+        asyncio.sleep(delay)
+        asyncio.run(train_more())
+# Train every 5 minutes
+asyncio.run(train_every(1000 * 60 * 5))
 
 import json
 from flask import Flask, render_template, request
@@ -172,7 +195,7 @@ def api():
 @app.route("/web")
 def web():
     sentence, _ = sentence_to_seq(str(request.args.get('s')))
-    out = ""
+    out = False
     if sentence is not None and sentence is not "":
         out = decode_sequence(sentence)
         # print("output:", out)
